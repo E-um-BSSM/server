@@ -1,7 +1,15 @@
-plugins {
-    id 'java'
-    id 'org.springframework.boot' version '3.3.6'
-    id 'io.spring.dependency-management' version '1.1.7'
+buildscript {
+    ext {
+        springBootVersion = '3.3.6'
+        dependencyManagementVersion = '1.1.7'
+    }
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+        classpath("io.spring.gradle:dependency-management-plugin:${dependencyManagementVersion}")
+    }
 }
 
 group = 'miracle'
@@ -12,50 +20,52 @@ ext {
     set('springCloudVersion', "2023.0.2")
 }
 
-allprojects {
-    repositories {
-        mavenCentral()
-        maven { url 'https://jitpack.io' }
+// allprojects 블록 대신 현재 스크립트가 적용되는 프로젝트(rootProject)와 하위 프로젝트에 동일하게 적용되도록 수정
+// 다만, apply from으로 불릴 때는 allprojects가 의도대로 동작하지 않을 수 있으므로 
+// 일반적으로는 subprojects {} 나 configure(allprojects) {} 등을 쓰지만,
+// 여기서는 이 파일을 '공통 설정 파일'로 쓰기로 했으므로, 파일 자체의 내용을 그대로 적용하도록 구조를 바꿉니다.
+
+apply plugin: 'java'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+
+repositories {
+    mavenCentral()
+    maven { url 'https://jitpack.io' }
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+
+    // JWT
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
+
+    // Redis
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+    compileOnly 'org.projectlombok:lombok'
+    runtimeOnly 'org.postgresql:postgresql'
+    annotationProcessor 'org.projectlombok:lombok'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
     }
+}
 
-    apply plugin: 'java'
-    apply plugin: 'org.springframework.boot'
-    apply plugin: 'io.spring.dependency-management'
-
-    java {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
-    }
-
-    dependencies {
-        implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
-        implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-        implementation 'org.springframework.boot:spring-boot-starter-security'
-
-        // JWT
-        implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
-        runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
-        runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
-
-        // Redis
-        implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-
-        compileOnly 'org.projectlombok:lombok'
-        runtimeOnly 'org.postgresql:postgresql'
-        annotationProcessor 'org.projectlombok:lombok'
-        testImplementation 'org.springframework.boot:spring-boot-starter-test'
-        testImplementation 'org.springframework.security:spring-security-test'
-        testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    }
-
-    dependencyManagement {
-        imports {
-            mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
-        }
-    }
-
-    tasks.named('test') {
-        useJUnitPlatform()
-    }
-
+tasks.named('test') {
+    useJUnitPlatform()
 }
