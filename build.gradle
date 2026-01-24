@@ -5,12 +5,18 @@ buildscript {
     }
     repositories {
         mavenCentral()
+        gradlePluginPortal() 
     }
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
         classpath("io.spring.gradle:dependency-management-plugin:${dependencyManagementVersion}")
     }
 }
+
+// 이제 플러그인을 적용합니다.
+apply plugin: 'java'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
 
 group = 'miracle'
 version = '0.0.1-SNAPSHOT'
@@ -19,15 +25,6 @@ description = 'E-um'
 ext {
     set('springCloudVersion', "2023.0.2")
 }
-
-// allprojects 블록 대신 현재 스크립트가 적용되는 프로젝트(rootProject)와 하위 프로젝트에 동일하게 적용되도록 수정
-// 다만, apply from으로 불릴 때는 allprojects가 의도대로 동작하지 않을 수 있으므로 
-// 일반적으로는 subprojects {} 나 configure(allprojects) {} 등을 쓰지만,
-// 여기서는 이 파일을 '공통 설정 파일'로 쓰기로 했으므로, 파일 자체의 내용을 그대로 적용하도록 구조를 바꿉니다.
-
-apply plugin: 'java'
-apply plugin: 'org.springframework.boot'
-apply plugin: 'io.spring.dependency-management'
 
 repositories {
     mavenCentral()
